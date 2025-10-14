@@ -1,4 +1,4 @@
-// js/firestore.js - UPDATED WITH RIWAYAT FEATURE
+// js/firestore.js - UPDATED WITH EDIT RIWAYAT FEATURE
 import {
   collection,
   addDoc,
@@ -290,6 +290,95 @@ export async function loadAllRiwayat() {
 
 export async function loadRiwayatAllByNama(nama) {
   return await loadRiwayatByNama(nama);
+}
+
+// === EDIT RIWAYAT (ADMIN ONLY) - NEW FEATURE ===
+export async function updateRiwayatPembayaran(riwayatId, mingguBaru) {
+  try {
+    const ref = doc(db, "riwayat_pembayaran", riwayatId);
+    const snap = await getDoc(ref);
+    
+    if (!snap.exists()) {
+      showNotification("Data riwayat tidak ditemukan.", "error");
+      return false;
+    }
+    
+    const data = snap.data();
+    const paidCount = (mingguBaru || []).filter(Boolean).length;
+    const totalBayar = paidCount * (data.jumlahPerMinggu || 0);
+    
+    // Update riwayat
+    await updateDoc(ref, {
+      minggu: mingguBaru,
+      totalBayar: totalBayar,
+      updatedAt: serverTimestamp(),
+      keterangan: (data.keterangan || "") + " [UPDATED]"
+    });
+    
+    // Log aktivitas update
+    await addDoc(collection(db, "log_aktivitas"), {
+      aksi: "UPDATE_RIWAYAT",
+      riwayatId: riwayatId,
+      nama: data.nama,
+      bulan: data.bulan,
+      tahun: data.tahun,
+      mingguLama: data.minggu,
+      mingguBaru: mingguBaru,
+      timestamp: serverTimestamp()
+    });
+    
+    showNotification("Data riwayat berhasil diupdate!", "success");
+    
+    // Update rekap bulanan
+    await updateMonthlyRecap();
+    
+    return true;
+  } catch (err) {
+    console.error("Error updating riwayat:", err);
+    showNotification("Gagal mengupdate data riwayat.", "error");
+    return false;
+  }
+}
+
+// === HAPUS RIWAYAT (ADMIN ONLY) - NEW FEATURE ===
+export async function deleteRiwayatPembayaran(riwayatId) {
+  try {
+    const ref = doc(db, "riwayat_pembayaran", riwayatId);
+    const snap = await getDoc(ref);
+    
+    if (!snap.exists()) {
+      showNotification("Data riwayat tidak ditemukan.", "error");
+      return false;
+    }
+    
+    const data = snap.data();
+    
+    // Backup ke log sebelum hapus
+    await addDoc(collection(db, "log_aktivitas"), {
+      aksi: "HAPUS_RIWAYAT",
+      riwayatId: riwayatId,
+      nama: data.nama,
+      bulan: data.bulan,
+      tahun: data.tahun,
+      minggu: data.minggu,
+      totalBayar: data.totalBayar,
+      timestamp: serverTimestamp()
+    });
+    
+    // Hapus dari riwayat
+    await deleteDoc(ref);
+    
+    showNotification("Data riwayat berhasil dihapus.", "info");
+    
+    // Update rekap bulanan
+    await updateMonthlyRecap();
+    
+    return true;
+  } catch (err) {
+    console.error("Error deleting riwayat:", err);
+    showNotification("Gagal menghapus data riwayat.", "error");
+    return false;
+  }
 }
 
 // === RESET PEMBAYARAN (ADMIN ONLY) ===

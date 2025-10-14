@@ -1,4 +1,4 @@
-// js/ui.js - UPDATED WITH RIWAYAT PEMBAYARAN FEATURE
+// js/ui.js - UPDATED WITH EDIT RIWAYAT FEATURE
 import { 
   tambahPembayaran, 
   tambahPengeluaran, 
@@ -11,7 +11,9 @@ import {
   loadAllRiwayat,
   resetSemuaPembayaran, 
   resetSemuaData, 
-  loadCatatanPengeluaran 
+  loadCatatanPengeluaran,
+  updateRiwayatPembayaran,
+  deleteRiwayatPembayaran
 } from "./firestore.js";
 
 /* DOM refs */
@@ -35,6 +37,9 @@ const pengDesc = document.getElementById("pengDesc");
 const pengJumlah = document.getElementById("pengJumlah");
 const modalPengSave = document.getElementById("modalPengSave");
 
+// Global variable to store current admin status
+let currentUserIsAdmin = false;
+
 /* Enhanced notification */
 export function showNotification(msg, type='info'){
   const box = document.createElement('div');
@@ -50,6 +55,7 @@ export function showNotification(msg, type='info'){
 
 /* Show/hide app parts by role and init listeners */
 export function showAppForRole(isAdmin) {
+  currentUserIsAdmin = isAdmin;
   initFirestoreListeners(isAdmin);
   
   // Setup event listeners for all buttons
@@ -142,6 +148,14 @@ export async function showAllRiwayat() {
         `<span style="display:inline-block; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:4px; background:${m ? '#c6f6d5' : '#fed7d7'}; color:${m ? '#22543d' : '#742a2a'};">M${idx + 1}</span>`
       ).join('');
       
+      // Add edit and delete buttons for admin
+      const adminButtons = currentUserIsAdmin ? `
+        <div style="margin-top:8px; display:flex; gap:6px;">
+          <button class="editRiwayat" data-id="${i.id}" data-nama="${escapeHtml(i.nama)}" data-bulan="${i.bulan}" data-tahun="${i.tahun}" style="padding:4px 10px; border-radius:6px; font-size:11px; background:#4299e1; color:white; border:none; cursor:pointer;">✏️ Edit</button>
+          <button class="hapusRiwayat" data-id="${i.id}" style="padding:4px 10px; border-radius:6px; font-size:11px; background:#f56565; color:white; border:none; cursor:pointer;">🗑️ Hapus</button>
+        </div>
+      ` : '';
+      
       return `
         <div style="padding:12px; border-left:3px solid #667eea; background:#f7fafc; margin-bottom:8px; border-radius:8px;">
           <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:6px;">
@@ -158,6 +172,7 @@ export async function showAllRiwayat() {
             <span>📝 ${keterangan}</span>
             <span>🕐 ${dateStr}</span>
           </div>
+          ${adminButtons}
         </div>
       `;
     }).join('');
@@ -180,7 +195,135 @@ export async function showAllRiwayat() {
       </div>
     `;
   }).join('');
+  
+  // Add event listeners for edit and delete buttons (admin only)
+  if (currentUserIsAdmin) {
+    content.querySelectorAll('.editRiwayat').forEach(btn => {
+      btn.onclick = () => openEditRiwayatModal(btn.dataset.id, btn.dataset.nama, btn.dataset.bulan, btn.dataset.tahun);
+    });
+    
+    content.querySelectorAll('.hapusRiwayat').forEach(btn => {
+      btn.onclick = async () => {
+        if (confirm('⚠️ Apakah Anda yakin ingin menghapus data riwayat ini?\n\nData yang dihapus akan dipindahkan ke log aktivitas.')) {
+          const success = await deleteRiwayatPembayaran(btn.dataset.id);
+          if (success) {
+            showAllRiwayat(); // Refresh modal
+          }
+        }
+      };
+    });
+  }
 }
+
+/* Open Edit Riwayat Modal - ADMIN ONLY */
+async function openEditRiwayatModal(riwayatId, nama, bulan, tahun) {
+  // Create custom modal for editing riwayat
+  const existingModal = document.getElementById('modalEditRiwayat');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Get current data
+  const { getDocs, collection, query, where } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+  const { db } = await import("./firebaseconfig.js");
+  
+  const q = query(collection(db, "riwayat_pembayaran"), where("__name__", "==", riwayatId));
+  const snap = await getDocs(q);
+  
+  if (snap.empty) {
+    showNotification("Data riwayat tidak ditemukan", "error");
+    return;
+  }
+  
+  const data = snap.docs[0].data();
+  const minggu = data.minggu || [false, false, false, false];
+  
+  const modalHtml = `
+    <div id="modalEditRiwayat" class="modal-overlay" style="display:flex;" onclick="closeEditRiwayatModal(event)">
+      <div class="modal" onclick="event.stopPropagation()" style="max-width:500px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+          <h3>✏️ Edit Riwayat Pembayaran</h3>
+          <button onclick="closeEditRiwayatModal()" style="width:36px; height:36px; border-radius:50%; background:#edf2f7; padding:0;">✕</button>
+        </div>
+        
+        <div style="background:#f7fafc; padding:16px; border-radius:12px; margin-bottom:20px;">
+          <div style="font-size:14px; color:#718096; margin-bottom:4px;">Nama Siswa</div>
+          <div style="font-size:18px; font-weight:700; color:#1a202c;">${escapeHtml(nama)}</div>
+          <div style="font-size:14px; color:#667eea; margin-top:4px;">${bulan} ${tahun}</div>
+        </div>
+        
+        <div style="margin-bottom:20px;">
+          <label style="display:block; font-weight:600; color:#4a5568; margin-bottom:12px;">Status Pembayaran per Minggu:</label>
+          <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:12px;">
+            ${minggu.map((m, idx) => `
+              <div style="background:white; border:2px solid ${m ? '#48bb78' : '#e2e8f0'}; border-radius:10px; padding:12px; cursor:pointer; transition:all 0.2s;" 
+                   onclick="toggleMingguEdit(${idx})" 
+                   id="minggu-edit-${idx}"
+                   data-checked="${m}">
+                <div style="font-size:12px; color:#718096; margin-bottom:4px;">Minggu ${idx + 1}</div>
+                <div style="font-size:16px; font-weight:700; color:${m ? '#48bb78' : '#718096'};">
+                  ${m ? '✓ Sudah Bayar' : '✗ Belum Bayar'}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div style="background:#fff5e6; border-left:4px solid #ed8936; padding:12px; border-radius:8px; margin-bottom:20px;">
+          <div style="font-size:12px; color:#744210;">
+            💡 <strong>Info:</strong> Klik pada kotak minggu untuk mengubah status pembayaran.
+          </div>
+        </div>
+        
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+          <button onclick="closeEditRiwayatModal()" style="background:#e2e8f0; color:#4a5568;">Batal</button>
+          <button onclick="saveEditRiwayat('${riwayatId}')" style="background:linear-gradient(135deg, #48bb78 0%, #38a169 100%);">💾 Simpan Perubahan</button>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+/* Toggle minggu in edit modal */
+window.toggleMingguEdit = function(index) {
+  const el = document.getElementById(`minggu-edit-${index}`);
+  if (!el) return;
+  
+  const currentState = el.dataset.checked === 'true';
+  const newState = !currentState;
+  
+  el.dataset.checked = newState;
+  el.style.borderColor = newState ? '#48bb78' : '#e2e8f0';
+  el.querySelector('div:last-child').style.color = newState ? '#48bb78' : '#718096';
+  el.querySelector('div:last-child').textContent = newState ? '✓ Sudah Bayar' : '✗ Belum Bayar';
+};
+
+/* Save edited riwayat */
+window.saveEditRiwayat = async function(riwayatId) {
+  const mingguBaru = [0, 1, 2, 3].map(idx => {
+    const el = document.getElementById(`minggu-edit-${idx}`);
+    return el ? el.dataset.checked === 'true' : false;
+  });
+  
+  const success = await updateRiwayatPembayaran(riwayatId, mingguBaru);
+  
+  if (success) {
+    closeEditRiwayatModal();
+    showAllRiwayat(); // Refresh the main modal
+  }
+};
+
+/* Close edit riwayat modal */
+window.closeEditRiwayatModal = function(e) {
+  const modal = document.getElementById('modalEditRiwayat');
+  if (!modal) return;
+  
+  if (!e || (e && e.target && e.target.classList.contains('modal-overlay'))) {
+    modal.remove();
+  }
+};
 
 /* Reset function - Admin only */
 export async function confirmResetPembayaran() {
@@ -355,7 +498,7 @@ export function renderPembayaran(data, isAdmin) {
     const minggu = d.minggu || [false,false,false,false];
     const weekCells = minggu.map((m,i) => {
       const badge = m 
-        ? '<span style="display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#c6f6d5; color:#22543d;">✓</span>' 
+        ? '<span style="display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#c6f6d5; color:#22543d;">✔</span>' 
         : '<span style="display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#fed7d7; color:#742a2a;">✗</span>';
       if (isAdmin) return `<td class="clickable" data-id="${d.id}" data-week="${i}">${badge}</td>`;
       return `<td>${badge}</td>`;
@@ -402,7 +545,7 @@ export function renderPembayaran(data, isAdmin) {
       cell.onclick = async () => {
         const id = cell.dataset.id; 
         const week = parseInt(cell.dataset.week);
-        const current = cell.textContent.includes('✓');
+        const current = cell.textContent.includes('✔');
         await updateMingguPembayaran(id, week, !current);
       };
     });
@@ -604,6 +747,14 @@ export async function showRiwayatModalForNama(nama) {
       `<span style="display:inline-block; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:4px; background:${m ? '#c6f6d5' : '#fed7d7'}; color:${m ? '#22543d' : '#742a2a'};">M${idx + 1}</span>`
     ).join('');
     
+    // Add edit and delete buttons for admin
+    const adminButtons = currentUserIsAdmin ? `
+      <div style="margin-top:8px; display:flex; gap:6px;">
+        <button class="editRiwayat" data-id="${i.id}" data-nama="${escapeHtml(nama)}" data-bulan="${i.bulan}" data-tahun="${i.tahun}" style="padding:4px 10px; border-radius:6px; font-size:11px; background:#4299e1; color:white; border:none; cursor:pointer;">✏️ Edit</button>
+        <button class="hapusRiwayat" data-id="${i.id}" style="padding:4px 10px; border-radius:6px; font-size:11px; background:#f56565; color:white; border:none; cursor:pointer;">🗑️ Hapus</button>
+      </div>
+    ` : '';
+    
     return `<div style="padding:16px; border-bottom:1px solid #e2e8f0; transition:all 0.2s ease;" onmouseover="this.style.background='#f7fafc'" onmouseout="this.style.background='white'">
       <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:6px;">
         <div>
@@ -616,8 +767,27 @@ export async function showRiwayatModalForNama(nama) {
         </div>
       </div>
       <div style="font-size:13px; color:#718096;">${paidCount}/4 minggu terbayar</div>
+      ${adminButtons}
     </div>`;
   }).join('');
+  
+  // Add event listeners for edit and delete buttons (admin only)
+  if (currentUserIsAdmin) {
+    content.querySelectorAll('.editRiwayat').forEach(btn => {
+      btn.onclick = () => openEditRiwayatModal(btn.dataset.id, btn.dataset.nama, btn.dataset.bulan, btn.dataset.tahun);
+    });
+    
+    content.querySelectorAll('.hapusRiwayat').forEach(btn => {
+      btn.onclick = async () => {
+        if (confirm('⚠️ Apakah Anda yakin ingin menghapus data riwayat ini?\n\nData yang dihapus akan dipindahkan ke log aktivitas.')) {
+          const success = await deleteRiwayatPembayaran(btn.dataset.id);
+          if (success) {
+            showRiwayatModalForNama(nama); // Refresh modal
+          }
+        }
+      };
+    });
+  }
 }
 
 /* Utility: escape html */
