@@ -1,0 +1,572 @@
+/* ======== IMPROVED STYLE.CSS WITH RESET BUTTONS ======== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: #1a202c;
+}
+
+.hidden {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+
+#mainApp.hidden {
+  display: none !important;
+}
+
+/* ========== LOGIN PAGE ========== */
+.centered {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  border-radius: 24px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card h2 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 32px;
+}
+
+.card input {
+  width: 100%;
+  padding: 14px 16px;
+  margin: 8px 0;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 15px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.card input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 24px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.error {
+  color: #e53e3e;
+  font-size: 14px;
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff5f5;
+  border-radius: 8px;
+  border-left: 4px solid #e53e3e;
+}
+
+/* ========== HEADER ========== */
+header {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  padding: 20px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #667eea;
+  text-align: left;
+}
+
+#userInfo {
+  padding: 8px 16px;
+  background: #edf2f7;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+}
+
+#logoutBtn {
+  padding: 10px 20px;
+  background: #e2e8f0;
+  color: #4a5568;
+}
+
+#logoutBtn:hover {
+  background: #cbd5e0;
+}
+
+/* ========== MAIN CONTENT ========== */
+main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* Stats Grid */
+#summaryPanel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+#summaryPanel > div {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+#summaryPanel > div:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+#summaryPanel > div:nth-child(1) { border-left: 4px solid #667eea; }
+#summaryPanel > div:nth-child(2) { border-left: 4px solid #48bb78; }
+#summaryPanel > div:nth-child(3) { border-left: 4px solid #f56565; }
+#summaryPanel > div:nth-child(4) { border-left: 4px solid #ed8936; }
+
+#summaryPanel > div {
+  font-size: 14px;
+  color: #718096;
+  font-weight: 500;
+}
+
+#totalPemasukan, #totalPengeluaran, #saldoKas {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-top: 8px;
+}
+
+#totalSiswa {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a202c;
+}
+
+/* Control Row */
+#controlRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+#controlRow > div:first-child {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+#controlRow button {
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#tambahDataBtn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+#tambahPengeluaranBtn {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+#exportCsvBtn {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+#resetPembayaranBtn {
+  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
+}
+
+#resetSemuaDataBtn {
+  background: linear-gradient(135deg, #f56565 0%, #c53030 100%);
+}
+
+#lihatCatatanBtn {
+  background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+}
+
+/* Monthly List */
+#monthlyList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  background: white;
+  border-radius: 16px;
+  margin-bottom: 24px;
+}
+
+#monthlyList > div {
+  background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+#monthlyList > div:hover {
+  border-color: #667eea;
+  transform: translateY(-2px);
+}
+
+#monthlyList strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  display: block;
+  margin-bottom: 6px;
+}
+
+#monthlyList div div {
+  font-size: 20px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+thead {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+th {
+  padding: 14px 12px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+td {
+  padding: 14px 12px;
+  text-align: center;
+  border-bottom: 1px solid #e2e8f0;
+  font-size: 14px;
+}
+
+tbody tr {
+  transition: all 0.2s ease;
+}
+
+tbody tr:hover {
+  background: #f7fafc;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+td.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+td.clickable:hover {
+  background: #edf2f7 !important;
+}
+
+button.hapus {
+  background: #fc8181;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+button.hapus:hover {
+  background: #f56565;
+}
+
+button.editBT {
+  background: #4299e1;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+button.editBT:hover {
+  background: #3182ce;
+}
+
+.bulanSel, .tahunInput {
+  padding: 6px 10px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.bulanSel:focus, .tahunInput:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.tahunInput {
+  width: 80px;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  width: 100%;
+  max-width: 600px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: modalSlide 0.3s ease;
+}
+
+@keyframes modalSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a202c;
+  margin-bottom: 24px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #4a5568;
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 14px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+/* Notifications */
+.notif {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 16px 24px;
+  border-radius: 12px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  z-index: 2000;
+  animation: slideInRight 0.3s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notif.success {
+  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+}
+
+.notif.error {
+  background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+}
+
+.notif.info {
+  background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  header {
+    padding: 16px 20px;
+  }
+
+  header h1 {
+    font-size: 20px;
+  }
+
+  main {
+    padding: 20px 16px;
+  }
+
+  #summaryPanel {
+    grid-template-columns: 1fr;
+  }
+
+  #controlRow {
+    flex-direction: column;
+  }
+
+  #controlRow > div:first-child {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  #controlRow button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .modal {
+    padding: 24px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  th, td {
+    padding: 10px 8px;
+  }
+}
+
+.small-muted {
+  font-size: 13px;
+  color: #718096;
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* === STATUS WARNA UNTUK TOTAL === */
+.total-cell {
+  font-weight: 600;
+  text-align: center;
+  transition: background 0.3s ease, color 0.3s ease;
+  border-radius: 6px;
+  padding: 6px;
+}
+
+.total-full {
+  background-color: #c8f7c5; /* hijau lembut */
+  color: #1e4620;
+}
+
+.total-partial {
+  background-color: #fff7c5; /* kuning lembut */
+  color: #5a4b00;
+}

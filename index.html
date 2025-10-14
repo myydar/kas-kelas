@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Uang Kas Kelas (Firebase)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .modal-overlay { position: fixed; inset:0; display:none; align-items:center; justify-content:center; background: rgba(0,0,0,0.6); z-index:2000; backdrop-filter: blur(4px); }
+  </style>
+</head>
+<body>
+  <!-- Login -->
+  <section id="loginPage" class="centered" style="display:flex;">
+    <div class="card">
+      <h2>🔐 Login — Uang Kas Kelas</h2>
+      <input id="loginEmail" type="email" placeholder="Email" />
+      <input id="loginPassword" type="password" placeholder="Password" />
+      <button id="loginBtn">Login</button>
+      <p id="loginError" class="error" style="display:none;"></p>
+      <p class="small-muted">Gunakan akun yang sudah dibuat (format: nama@kelasif24a.local)</p>
+    </div>
+  </section>
+
+  <!-- Main App -->
+  <section id="mainApp" class="hidden" style="display:none;">
+    <header>
+      <h1>💰 Pembayaran Kas Kelas</h1>
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div id="userInfo"></div>
+        <button id="logoutBtn">Logout</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- Summary Stats -->
+      <div id="summaryPanel">
+        <div>
+          <div style="font-size:14px; color:#718096; margin-bottom:8px;">Total Siswa</div>
+          <div id="totalSiswa" style="font-size:28px; font-weight:700;">0</div>
+        </div>
+        <div>
+          <div style="font-size:14px; color:#718096; margin-bottom:8px;">Total Pemasukan</div>
+          <div id="totalPemasukan" style="font-size:28px; font-weight:700;">Rp 0</div>
+        </div>
+        <div>
+          <div style="font-size:14px; color:#718096; margin-bottom:8px;">Total Pengeluaran</div>
+          <div id="totalPengeluaran" style="font-size:28px; font-weight:700;">Rp 0</div>
+        </div>
+        <div>
+          <div style="font-size:14px; color:#718096; margin-bottom:8px;">Saldo Kas</div>
+          <div id="saldoKas" style="font-size:28px; font-weight:700;">Rp 0</div>
+        </div>
+      </div>
+
+      <!-- Control Buttons -->
+      <div id="controlRow">
+        <div>
+          <button id="tambahDataBtn">➕ Tambah Data</button>
+          <button id="tambahPengeluaranBtn">💸 Tambah Pengeluaran</button>
+          <button id="exportCsvBtn">📥 Export CSV</button>
+          <button id="lihatRiwayatBtn" style="background:linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);">📜 Lihat Riwayat</button>
+          <button id="lihatCatatanBtn" style="display:none; background:linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);">📝 Lihat Catatan</button>
+        </div>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button id="resetPembayaranBtn" style="display:none; background:linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);">🔄 Reset Pembayaran</button>
+          <button id="resetSemuaDataBtn" style="display:none; background:linear-gradient(135deg, #f56565 0%, #c53030 100%);">🚨 Reset Semua Data</button>
+        </div>
+      </div>
+
+      <!-- Monthly Recap -->
+      <section style="background:white; border-radius:16px; padding:28px; margin-bottom:24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+        <h3 style="font-size:20px; font-weight:700; margin-bottom:20px; color:#1a202c;">📊 Rekap Pemasukan per Bulan</h3>
+        <div id="monthlyList"></div>
+      </section>
+
+      <!-- Tables -->
+      <section id="tablesWrapper">
+        <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px; margin-bottom:24px;">
+          <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <h3 style="font-size:20px; font-weight:700; margin-bottom:20px; color:#1a202c;">Data Pembayaran</h3>
+            <div id="tabelPembayaran"></div>
+          </div>
+          
+          <div style="background:white; border-radius:16px; padding:24px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+            <h3 style="font-size:20px; font-weight:700; margin-bottom:20px; color:#1a202c;">Pengeluaran</h3>
+            <div id="tabelPengeluaran"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </section>
+
+  <!-- Modal: Tambah / Edit Pembayaran -->
+  <div id="modalPembayaran" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h3 id="modalPembTitle">Tambah Pembayaran</h3>
+        <button onclick="closeModal()" style="width:36px; height:36px; border-radius:50%; background:#edf2f7; padding:0;">✕</button>
+      </div>
+      <div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nama Siswa</label>
+            <input id="modalNama" type="text" placeholder="Masukkan nama siswa" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Bulan</label>
+            <select id="modalBulan">
+              <option>Januari</option><option>Februari</option><option>Maret</option><option>April</option>
+              <option>Mei</option><option>Juni</option><option>Juli</option><option>Agustus</option>
+              <option>September</option><option>Oktober</option><option>November</option><option>Desember</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Tahun</label>
+            <input id="modalTahun" type="number" value="2025" min="2020" />
+          </div>
+          <div class="form-group">
+            <label>Jumlah per Minggu (Rp)</label>
+            <input id="modalJumlah" type="number" value="5000" />
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:24px;">
+          <button onclick="closeModal()" style="background:#e2e8f0; color:#4a5568;">Batal</button>
+          <button id="modalSaveBtn">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Tambah Pengeluaran -->
+  <div id="modalPengeluaran" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h3>Tambah Pengeluaran</h3>
+        <button onclick="closeModal()" style="width:36px; height:36px; border-radius:50%; background:#edf2f7; padding:0;">✕</button>
+      </div>
+      <div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Keterangan</label>
+            <input id="pengDesc" type="text" placeholder="Deskripsi pengeluaran" />
+          </div>
+          <div class="form-group">
+            <label>Jumlah (Rp)</label>
+            <input id="pengJumlah" type="number" placeholder="0" />
+          </div>
+        </div>
+        <div style="display:flex; gap:12px; justify-content:flex-end; margin-top:24px;">
+          <button onclick="closeModal()" style="background:#e2e8f0; color:#4a5568;">Batal</button>
+          <button id="modalPengSave">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Riwayat Per Nama -->
+  <div id="modalRiwayat" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h3 id="riwayatTitle">Riwayat</h3>
+        <button onclick="closeModal()" style="width:36px; height:36px; border-radius:50%; background:#edf2f7; padding:0;">✕</button>
+      </div>
+      <div id="riwayatContent" style="max-height:500px; overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Riwayat Semua (ALL USERS) -->
+  <div id="modalRiwayatAll" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:800px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h3>📜 Riwayat Pembayaran Semua Siswa</h3>
+        <button onclick="closeModal()" style="width:36px; height:36px; border-radius:50%; background:#edf2f7; padding:0;">✕</button>
+      </div>
+      <div id="riwayatAllContent" style="max-height:600px; overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- Modal: Catatan Pengeluaran -->
+  <div id="modalCatatan" class="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" onclick="event.stopPropagation()" style="max-width:700px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+        <h3>📝 Catatan Pengeluaran</h3>
+        <button onclick="closeModal()" style="width:36px; height:36px; border-radius:50%; background:#edf2f7; padding:0;">✕</button>
+      </div>
+      <div id="catatanContent" style="max-height:500px; overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- Firebase + App JS -->
+  <script type="module" src="js/firebaseConfig.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/firestore.js"></script>
+  <script type="module" src="js/ui.js"></script>
+  
+  <script>
+    // Global close modal function
+    window.closeModal = function(e) {
+      const modals = document.querySelectorAll('.modal-overlay');
+      if (e && e.target && e.target.classList.contains('modal-overlay')) {
+        e.target.style.display = 'none';
+      } else {
+        modals.forEach(m => m.style.display = 'none');
+      }
+    };
+  </script>
+</body>
+</html>
