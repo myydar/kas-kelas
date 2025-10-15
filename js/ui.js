@@ -1,4 +1,4 @@
-// js/ui.js - FIXED: Mahasiswa tidak bisa edit/hapus riwayat
+// js/ui.js - WITH SEARCH FEATURE
 import { 
   tambahPembayaran, 
   tambahPengeluaran, 
@@ -15,8 +15,6 @@ import {
   updateRiwayatPembayaran,
   deleteRiwayatPembayaran
 } from "./firestore.js";
-
-// CRITICAL: Use consistent casing - firebaseConfig.js not firebaseconfig.js
 
 /* DOM refs */
 const tabelPembayaran = document.getElementById("tabelPembayaran");
@@ -39,8 +37,129 @@ const pengDesc = document.getElementById("pengDesc");
 const pengJumlah = document.getElementById("pengJumlah");
 const modalPengSave = document.getElementById("modalPengSave");
 
-// Global variable to store current admin status
+// Search elements
+const searchPembayaran = document.getElementById("searchPembayaran");
+const clearSearchPembayaran = document.getElementById("clearSearchPembayaran");
+const searchInfoPembayaran = document.getElementById("searchInfoPembayaran");
+const searchCountPembayaran = document.getElementById("searchCountPembayaran");
+const totalCountPembayaran = document.getElementById("totalCountPembayaran");
+
+const searchPengeluaran = document.getElementById("searchPengeluaran");
+const clearSearchPengeluaran = document.getElementById("clearSearchPengeluaran");
+const searchInfoPengeluaran = document.getElementById("searchInfoPengeluaran");
+const searchCountPengeluaran = document.getElementById("searchCountPengeluaran");
+const totalCountPengeluaran = document.getElementById("totalCountPengeluaran");
+
+// Global variable to store current admin status and data
 let currentUserIsAdmin = false;
+let allPembayaranData = [];
+let allPengeluaranData = [];
+
+// Initialize search functionality
+function initSearchListeners() {
+  if (searchPembayaran) {
+    searchPembayaran.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      if (query) {
+        clearSearchPembayaran.classList.add('show');
+      } else {
+        clearSearchPembayaran.classList.remove('show');
+      }
+      filterPembayaran(query);
+    });
+  }
+
+  if (clearSearchPembayaran) {
+    clearSearchPembayaran.addEventListener('click', () => {
+      searchPembayaran.value = '';
+      clearSearchPembayaran.classList.remove('show');
+      filterPembayaran('');
+    });
+  }
+
+  if (searchPengeluaran) {
+    searchPengeluaran.addEventListener('input', (e) => {
+      const query = e.target.value.trim();
+      if (query) {
+        clearSearchPengeluaran.classList.add('show');
+      } else {
+        clearSearchPengeluaran.classList.remove('show');
+      }
+      filterPengeluaran(query);
+    });
+  }
+
+  if (clearSearchPengeluaran) {
+    clearSearchPengeluaran.addEventListener('click', () => {
+      searchPengeluaran.value = '';
+      clearSearchPengeluaran.classList.remove('show');
+      filterPengeluaran('');
+    });
+  }
+}
+
+// Filter pembayaran data
+function filterPembayaran(query) {
+  if (!query) {
+    renderPembayaran(allPembayaranData, currentUserIsAdmin);
+    searchInfoPembayaran.classList.remove('show');
+    return;
+  }
+
+  const filtered = allPembayaranData.filter(item => 
+    item.nama.toLowerCase().includes(query.toLowerCase()) ||
+    item.bulan.toLowerCase().includes(query.toLowerCase()) ||
+    String(item.tahun).includes(query)
+  );
+
+  renderPembayaran(filtered, currentUserIsAdmin);
+  
+  // Update search info
+  searchCountPembayaran.textContent = filtered.length;
+  totalCountPembayaran.textContent = allPembayaranData.length;
+  searchInfoPembayaran.classList.add('show');
+
+  if (filtered.length === 0) {
+    tabelPembayaran.innerHTML = `
+      <div style="text-align:center; padding:60px 20px; color:#718096;">
+        <div style="font-size:64px; margin-bottom:16px; opacity:0.5;">🔍</div>
+        <div style="font-size:16px; font-weight:500; margin-bottom:8px;">Tidak ada hasil</div>
+        <div style="font-size:14px; color:#a0aec0;">Coba kata kunci lain</div>
+      </div>
+    `;
+  }
+}
+
+// Filter pengeluaran data
+function filterPengeluaran(query) {
+  if (!query) {
+    renderPengeluaran(allPengeluaranData, currentUserIsAdmin);
+    searchInfoPengeluaran.classList.remove('show');
+    return;
+  }
+
+  const filtered = allPengeluaranData.filter(item => 
+    item.keterangan.toLowerCase().includes(query.toLowerCase()) ||
+    String(item.jumlah).includes(query)
+  );
+
+  renderPengeluaran(filtered, currentUserIsAdmin);
+  
+  // Update search info
+  searchCountPengeluaran.textContent = filtered.length;
+  totalCountPengeluaran.textContent = allPengeluaranData.length;
+  searchInfoPengeluaran.classList.add('show');
+
+  if (filtered.length === 0) {
+    tabelPengeluaran.innerHTML = `
+      <div style="text-align:center; padding:60px 20px; color:#718096;">
+        <div style="font-size:64px; margin-bottom:16px; opacity:0.5;">🔍</div>
+        <div style="font-size:16px; font-weight:500; margin-bottom:8px;">Tidak ada hasil</div>
+        <div style="font-size:14px; color:#a0aec0;">Coba kata kunci lain</div>
+      </div>
+    `;
+  }
+}
 
 /* Enhanced notification */
 export function showNotification(msg, type='info'){
@@ -59,6 +178,7 @@ export function showNotification(msg, type='info'){
 export function showAppForRole(isAdmin) {
   currentUserIsAdmin = isAdmin;
   initFirestoreListeners(isAdmin);
+  initSearchListeners(); // Initialize search
   
   // Setup event listeners for admin-only buttons
   if (isAdmin) {
@@ -508,8 +628,17 @@ if (modalPengSave) {
   });
 }
 
-/* RENDER FUNCTIONS - FIXED FOR MAHASISWA */
+/* RENDER FUNCTIONS - WITH SEARCH SUPPORT */
 export function renderPembayaran(data, isAdmin) {
+  // Store data globally for search
+  allPembayaranData = data || [];
+  currentUserIsAdmin = isAdmin;
+  
+  // Update total count
+  if (totalCountPembayaran) {
+    totalCountPembayaran.textContent = allPembayaranData.length;
+  }
+  
   if (!tabelPembayaran) return;
   
   if (!data || data.length === 0) {
@@ -627,6 +756,15 @@ export function renderPembayaran(data, isAdmin) {
 }
 
 export function renderPengeluaran(data, isAdmin) {
+  // Store data globally for search
+  allPengeluaranData = data || [];
+  currentUserIsAdmin = isAdmin;
+  
+  // Update total count
+  if (totalCountPengeluaran) {
+    totalCountPengeluaran.textContent = allPengeluaranData.length;
+  }
+  
   if (!tabelPengeluaran) return;
   
   if (!data || data.length === 0) {
@@ -761,7 +899,7 @@ export async function showRiwayatModalForNama(nama) {
   if (!modalRiwayat) return;
   
   modalRiwayat.style.display = 'flex';
-  document.getElementById('riwayatTitle').textContent = `Riwayat – ${nama}`;
+  document.getElementById('riwayatTitle').textContent = `Riwayat — ${nama}`;
   const content = document.getElementById('riwayatContent');
   content.innerHTML = '<p style="text-align:center; padding:20px; color:#718096;">Memuat riwayat...</p>';
   
