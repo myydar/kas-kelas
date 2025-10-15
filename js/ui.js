@@ -1,4 +1,4 @@
-// js/ui.js - UPDATED WITH EDIT RIWAYAT FEATURE
+// js/ui.js - FIXED: Mahasiswa tidak bisa edit/hapus riwayat
 import { 
   tambahPembayaran, 
   tambahPengeluaran, 
@@ -15,6 +15,8 @@ import {
   updateRiwayatPembayaran,
   deleteRiwayatPembayaran
 } from "./firestore.js";
+
+// CRITICAL: Use consistent casing - firebaseConfig.js not firebaseconfig.js
 
 /* DOM refs */
 const tabelPembayaran = document.getElementById("tabelPembayaran");
@@ -58,13 +60,13 @@ export function showAppForRole(isAdmin) {
   currentUserIsAdmin = isAdmin;
   initFirestoreListeners(isAdmin);
   
-  // Setup event listeners for all buttons
-  const resetBtn = document.getElementById("resetPembayaranBtn");
-  const resetSemuaBtn = document.getElementById("resetSemuaDataBtn");
-  const catatanBtn = document.getElementById("lihatCatatanBtn");
-  const riwayatAllBtn = document.getElementById("lihatRiwayatBtn");
-  
+  // Setup event listeners for admin-only buttons
   if (isAdmin) {
+    const resetBtn = document.getElementById("resetPembayaranBtn");
+    const resetSemuaBtn = document.getElementById("resetSemuaDataBtn");
+    const catatanBtn = document.getElementById("lihatCatatanBtn");
+    const riwayatAllBtn = document.getElementById("lihatRiwayatBtn");
+    
     if (resetBtn) {
       resetBtn.onclick = () => confirmResetPembayaran();
     }
@@ -74,11 +76,20 @@ export function showAppForRole(isAdmin) {
     if (catatanBtn) {
       catatanBtn.onclick = () => showCatatanPengeluaran();
     }
-  }
-  
-  // Riwayat button available for ALL users
-  if (riwayatAllBtn) {
-    riwayatAllBtn.onclick = () => showAllRiwayat();
+    if (riwayatAllBtn) {
+      riwayatAllBtn.onclick = () => showAllRiwayat();
+    }
+  } else {
+    // Mahasiswa juga bisa lihat riwayat dan catatan (read-only)
+    const catatanBtn = document.getElementById("lihatCatatanBtn");
+    const riwayatAllBtn = document.getElementById("lihatRiwayatBtn");
+    
+    if (catatanBtn) {
+      catatanBtn.onclick = () => showCatatanPengeluaran();
+    }
+    if (riwayatAllBtn) {
+      riwayatAllBtn.onclick = () => showAllRiwayat();
+    }
   }
 }
 
@@ -148,7 +159,7 @@ export async function showAllRiwayat() {
         `<span style="display:inline-block; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:4px; background:${m ? '#c6f6d5' : '#fed7d7'}; color:${m ? '#22543d' : '#742a2a'};">M${idx + 1}</span>`
       ).join('');
       
-      // Add edit and delete buttons for admin
+      // FIXED: Admin buttons ONLY for admin users
       const adminButtons = currentUserIsAdmin ? `
         <div style="margin-top:8px; display:flex; gap:6px;">
           <button class="editRiwayat" data-id="${i.id}" data-nama="${escapeHtml(i.nama)}" data-bulan="${i.bulan}" data-tahun="${i.tahun}" style="padding:4px 10px; border-radius:6px; font-size:11px; background:#4299e1; color:white; border:none; cursor:pointer;">✏️ Edit</button>
@@ -196,7 +207,7 @@ export async function showAllRiwayat() {
     `;
   }).join('');
   
-  // Add event listeners for edit and delete buttons (admin only)
+  // FIXED: Add event listeners for edit and delete buttons ONLY if admin
   if (currentUserIsAdmin) {
     content.querySelectorAll('.editRiwayat').forEach(btn => {
       btn.onclick = () => openEditRiwayatModal(btn.dataset.id, btn.dataset.nama, btn.dataset.bulan, btn.dataset.tahun);
@@ -217,6 +228,11 @@ export async function showAllRiwayat() {
 
 /* Open Edit Riwayat Modal - ADMIN ONLY */
 async function openEditRiwayatModal(riwayatId, nama, bulan, tahun) {
+  if (!currentUserIsAdmin) {
+    showNotification("Anda tidak memiliki akses untuk mengedit riwayat", "error");
+    return;
+  }
+  
   // Create custom modal for editing riwayat
   const existingModal = document.getElementById('modalEditRiwayat');
   if (existingModal) {
@@ -225,7 +241,7 @@ async function openEditRiwayatModal(riwayatId, nama, bulan, tahun) {
   
   // Get current data
   const { getDocs, collection, query, where } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-  const { db } = await import("./firebaseconfig.js");
+  const { db } = await import("./firebaseConfig.js");
   
   const q = query(collection(db, "riwayat_pembayaran"), where("__name__", "==", riwayatId));
   const snap = await getDocs(q);
@@ -327,6 +343,11 @@ window.closeEditRiwayatModal = function(e) {
 
 /* Reset function - Admin only */
 export async function confirmResetPembayaran() {
+  if (!currentUserIsAdmin) {
+    showNotification("Anda tidak memiliki akses untuk reset pembayaran", "error");
+    return;
+  }
+  
   const confirmed = confirm(
     '⚠️ PERINGATAN!\n\n' +
     'Anda akan mereset SEMUA status pembayaran (M1, M2, M3, M4) menjadi belum bayar.\n\n' +
@@ -353,6 +374,11 @@ export async function confirmResetPembayaran() {
 
 /* Reset semua data - Admin only */
 export async function confirmResetSemuaData() {
+  if (!currentUserIsAdmin) {
+    showNotification("Anda tidak memiliki akses untuk reset semua data", "error");
+    return;
+  }
+  
   const confirmed = confirm(
     '🚨 PERINGATAN SANGAT KERAS!\n\n' +
     'Anda akan MENGHAPUS TOTAL:\n' +
@@ -396,7 +422,7 @@ export async function confirmResetSemuaData() {
   }
 }
 
-/* Show catatan pengeluaran modal */
+/* Show catatan pengeluaran modal - ALL USERS (read-only for mahasiswa) */
 export async function showCatatanPengeluaran() {
   modalCatatan.style.display = 'flex';
   const content = document.getElementById('catatanContent');
@@ -443,9 +469,14 @@ export function closeModal(e) {
   }
 }
 
-/* Wire save actions */
+/* Wire save actions - ADMIN ONLY */
 if (modalSaveBtn) {
   modalSaveBtn.addEventListener('click', async () => {
+    if (!currentUserIsAdmin) {
+      showNotification("Anda tidak memiliki akses untuk menambah pembayaran", "error");
+      return;
+    }
+    
     const nama = modalNama.value.trim();
     const bulan = modalBulan.value;
     const tahun = parseInt(modalTahun.value) || new Date().getFullYear();
@@ -461,6 +492,11 @@ if (modalSaveBtn) {
 
 if (modalPengSave) {
   modalPengSave.addEventListener('click', async () => {
+    if (!currentUserIsAdmin) {
+      showNotification("Anda tidak memiliki akses untuk menambah pengeluaran", "error");
+      return;
+    }
+    
     const ket = pengDesc.value.trim();
     const jumlah = Number(pengJumlah.value) || 0;
     if (!ket || !jumlah) { 
@@ -472,7 +508,7 @@ if (modalPengSave) {
   });
 }
 
-/* RENDER FUNCTIONS - FIXED */
+/* RENDER FUNCTIONS - FIXED FOR MAHASISWA */
 export function renderPembayaran(data, isAdmin) {
   if (!tabelPembayaran) return;
   
@@ -498,14 +534,18 @@ export function renderPembayaran(data, isAdmin) {
     const minggu = d.minggu || [false,false,false,false];
     const weekCells = minggu.map((m,i) => {
       const badge = m 
-        ? '<span style="display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#c6f6d5; color:#22543d;">✔</span>' 
+        ? '<span style="display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#c6f6d5; color:#22543d;">✓</span>' 
         : '<span style="display:inline-block; padding:4px 12px; border-radius:12px; font-size:12px; font-weight:600; background:#fed7d7; color:#742a2a;">✗</span>';
+      
+      // FIXED: Clickable ONLY for admin
       if (isAdmin) return `<td class="clickable" data-id="${d.id}" data-week="${i}">${badge}</td>`;
       return `<td>${badge}</td>`;
     }).join('');
     
     const totalBayar = (minggu.filter(Boolean).length) * (d.jumlahPerMinggu || 0);
     const totalClass = minggu.filter(Boolean).length === 4 ? "total-full" : "total-partial";
+    
+    // FIXED: Hapus button ONLY for admin
     const aksi = isAdmin ? `<td>
       <button class="hapusPemb hapus" data-id="${d.id}">🗑️</button>
     </td>` : '';
@@ -531,8 +571,11 @@ export function renderPembayaran(data, isAdmin) {
     </tr>`;
   });
 
+  // FIXED: Hapus kolom "Aksi" dari header jika bukan admin
+  const aksiHeader = isAdmin ? '<th>Aksi</th>' : '';
+  
   tabelPembayaran.innerHTML = `<table><thead>
-    <tr><th>Nama</th><th>Bulan/Tahun</th><th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>Total</th>${isAdmin?'<th>Aksi</th>':''}</tr>
+    <tr><th>Nama</th><th>Bulan/Tahun</th><th>M1</th><th>M2</th><th>M3</th><th>M4</th><th>Total</th>${aksiHeader}</tr>
   </thead><tbody>${rows.join('')}</tbody></table>`;
 
   // Add event listeners for riwayat buttons (available for ALL users)
@@ -540,12 +583,13 @@ export function renderPembayaran(data, isAdmin) {
     btn.onclick = () => showRiwayatModalForNama(btn.dataset.nama);
   });
 
+  // FIXED: Event listeners ONLY for admin
   if (isAdmin) {
     tabelPembayaran.querySelectorAll('.clickable').forEach(cell => {
       cell.onclick = async () => {
         const id = cell.dataset.id; 
         const week = parseInt(cell.dataset.week);
-        const current = cell.textContent.includes('✔');
+        const current = cell.textContent.includes('✓');
         await updateMingguPembayaran(id, week, !current);
       };
     });
@@ -597,6 +641,7 @@ export function renderPengeluaran(data, isAdmin) {
   
   data.sort((a,b)=> new Date(b.tanggal) - new Date(a.tanggal));
   
+  // FIXED: Hapus button ONLY for admin
   const rows = data.map(d => `<tr>
     <td style="text-align:left;">${escapeHtml(d.keterangan)}</td>
     <td><strong>Rp ${Number(d.jumlah).toLocaleString('id-ID')}</strong></td>
@@ -604,8 +649,12 @@ export function renderPengeluaran(data, isAdmin) {
     ${isAdmin ? `<td><button class="hapusPeng hapus" data-id="${d.id}">🗑️</button></td>` : ''}
   </tr>`);
   
-  tabelPengeluaran.innerHTML = `<table><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Tanggal</th>${isAdmin?'<th>Aksi</th>':''}</tr></thead><tbody>${rows.join('')}</tbody></table>`;
+  // FIXED: Hapus kolom "Aksi" dari header jika bukan admin
+  const aksiHeader = isAdmin ? '<th>Aksi</th>' : '';
+  
+  tabelPengeluaran.innerHTML = `<table><thead><tr><th>Keterangan</th><th>Jumlah</th><th>Tanggal</th>${aksiHeader}</tr></thead><tbody>${rows.join('')}</tbody></table>`;
 
+  // FIXED: Event listeners ONLY for admin
   if (isAdmin) {
     tabelPengeluaran.querySelectorAll('.hapusPeng').forEach(btn=>{
       btn.onclick = async ()=> {
@@ -659,7 +708,7 @@ export async function exportCSV() {
   try {
     // Import getDocs dari Firebase
     const { getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const { db } = await import("./firebaseconfig.js");
+    const { db } = await import("./firebaseConfig.js");
     
     const paySnap = await getDocs(collection(db, "pembayaran"));
     const pengSnap = await getDocs(collection(db, "pengeluaran"));
@@ -712,7 +761,7 @@ export async function showRiwayatModalForNama(nama) {
   if (!modalRiwayat) return;
   
   modalRiwayat.style.display = 'flex';
-  document.getElementById('riwayatTitle').textContent = `Riwayat — ${nama}`;
+  document.getElementById('riwayatTitle').textContent = `Riwayat – ${nama}`;
   const content = document.getElementById('riwayatContent');
   content.innerHTML = '<p style="text-align:center; padding:20px; color:#718096;">Memuat riwayat...</p>';
   
@@ -747,7 +796,7 @@ export async function showRiwayatModalForNama(nama) {
       `<span style="display:inline-block; padding:2px 6px; border-radius:6px; font-size:11px; margin-right:4px; background:${m ? '#c6f6d5' : '#fed7d7'}; color:${m ? '#22543d' : '#742a2a'};">M${idx + 1}</span>`
     ).join('');
     
-    // Add edit and delete buttons for admin
+    // FIXED: Admin buttons ONLY for admin users
     const adminButtons = currentUserIsAdmin ? `
       <div style="margin-top:8px; display:flex; gap:6px;">
         <button class="editRiwayat" data-id="${i.id}" data-nama="${escapeHtml(nama)}" data-bulan="${i.bulan}" data-tahun="${i.tahun}" style="padding:4px 10px; border-radius:6px; font-size:11px; background:#4299e1; color:white; border:none; cursor:pointer;">✏️ Edit</button>
@@ -771,7 +820,7 @@ export async function showRiwayatModalForNama(nama) {
     </div>`;
   }).join('');
   
-  // Add event listeners for edit and delete buttons (admin only)
+  // FIXED: Add event listeners for edit and delete buttons ONLY if admin
   if (currentUserIsAdmin) {
     content.querySelectorAll('.editRiwayat').forEach(btn => {
       btn.onclick = () => openEditRiwayatModal(btn.dataset.id, btn.dataset.nama, btn.dataset.bulan, btn.dataset.tahun);

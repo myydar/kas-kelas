@@ -1,6 +1,6 @@
-// js/auth.js – UPDATED WITH RIWAYAT ACCESS FOR ALL USERS
+// js/auth.js – FIXED ROLE DETECTION FOR ADMIN VS MAHASISWA
 
-import { auth } from "./firebaseconfig.js";
+import { auth } from "./firebaseConfig.js";
 import {
   signInWithEmailAndPassword,
   signOut,
@@ -74,7 +74,7 @@ if (loginBtn) {
     loginBtn.textContent = "Login...";
 
     try {
-      console.log("🔑 Attempting login for:", email);
+      console.log("🔐 Attempting login for:", email);
       await signInWithEmailAndPassword(auth, email, password);
       
       // Clear form
@@ -138,20 +138,19 @@ if (loginEmail) {
   });
 }
 
-// === Pantau Status Login - UPDATED ===
+// === Pantau Status Login - FIXED ROLE DETECTION ===
 onAuthStateChanged(auth, async (user) => {
   console.log("🔄 Auth state changed:", user ? user.email : "No user");
   
   if (user) {
     try {
-      // Deteksi role admin berdasarkan custom claim atau email
-      const tokenResult = await user.getIdTokenResult(true);
-      const isAdmin =
-        tokenResult.claims.admin === true ||
-        user.email.includes("admin") ||
-        user.email.includes("kelasif24a.local");
+      // FIXED: Deteksi role admin HANYA berdasarkan email yang mengandung "admin"
+      // Jika email mengandung "admin" = Admin
+      // Jika tidak = Mahasiswa
+      const isAdmin = user.email.toLowerCase().includes("admin");
 
-      console.log("👤 User role:", isAdmin ? "Admin" : "Siswa");
+      console.log("👤 User role:", isAdmin ? "Admin" : "Mahasiswa");
+      console.log("📧 Email:", user.email);
 
       // Tampilkan halaman utama
       if (loginPage) {
@@ -164,10 +163,10 @@ onAuthStateChanged(auth, async (user) => {
         mainApp.classList.remove("hidden");
       }
 
-      // Tampilkan info user
+      // Tampilkan info user dengan label yang benar
       const userInfo = document.getElementById("userInfo");
       if (userInfo) {
-        userInfo.textContent = `👤 ${user.email}${isAdmin ? " (Admin)" : ""}`;
+        userInfo.textContent = `👤 ${user.email}${isAdmin ? " (Admin)" : " (Mahasiswa)"}`;
       }
 
       // Notifikasi
@@ -176,40 +175,59 @@ onAuthStateChanged(auth, async (user) => {
       // Tampilkan fitur sesuai role
       showAppForRole(isAdmin);
 
-      // Inisialisasi tombol utama (available for ALL users)
+      // === BUTTON VISIBILITY CONTROL ===
       const tambahDataBtn = document.getElementById("tambahDataBtn");
       const tambahPengeluaranBtn = document.getElementById("tambahPengeluaranBtn");
       const exportCsvBtn = document.getElementById("exportCsvBtn");
       const lihatRiwayatBtn = document.getElementById("lihatRiwayatBtn");
-
-      if (tambahDataBtn) {
-        tambahDataBtn.onclick = () => openTambahPembayaran();
-      }
-      if (tambahPengeluaranBtn) {
-        tambahPengeluaranBtn.onclick = () => openTambahPengeluaran();
-      }
-      if (exportCsvBtn) {
-        exportCsvBtn.onclick = () => exportCSV();
-      }
-      
-      // Riwayat button is ALWAYS visible for ALL users
-      if (lihatRiwayatBtn) {
-        lihatRiwayatBtn.style.display = "inline-flex";
-      }
-
-      // Tampilkan tombol admin opsional jika ada (ADMIN ONLY)
       const resetBtn = document.getElementById("resetPembayaranBtn");
       const resetSemuaBtn = document.getElementById("resetSemuaDataBtn");
       const catatanBtn = document.getElementById("lihatCatatanBtn");
 
       if (isAdmin) {
-        if (resetBtn) resetBtn.style.display = "inline-flex";
-        if (resetSemuaBtn) resetSemuaBtn.style.display = "inline-flex";
-        if (catatanBtn) catatanBtn.style.display = "inline-flex";
+        // ADMIN: Semua button visible
+        if (tambahDataBtn) {
+          tambahDataBtn.style.display = "inline-flex";
+          tambahDataBtn.onclick = () => openTambahPembayaran();
+        }
+        if (tambahPengeluaranBtn) {
+          tambahPengeluaranBtn.style.display = "inline-flex";
+          tambahPengeluaranBtn.onclick = () => openTambahPengeluaran();
+        }
+        if (exportCsvBtn) {
+          exportCsvBtn.style.display = "inline-flex";
+          exportCsvBtn.onclick = () => exportCSV();
+        }
+        if (lihatRiwayatBtn) {
+          lihatRiwayatBtn.style.display = "inline-flex";
+        }
+        if (resetBtn) {
+          resetBtn.style.display = "inline-flex";
+        }
+        if (resetSemuaBtn) {
+          resetSemuaBtn.style.display = "inline-flex";
+        }
+        if (catatanBtn) {
+          catatanBtn.style.display = "inline-flex";
+        }
       } else {
+        // MAHASISWA: Hanya export, riwayat, dan catatan yang visible
+        if (tambahDataBtn) tambahDataBtn.style.display = "none";
+        if (tambahPengeluaranBtn) tambahPengeluaranBtn.style.display = "none";
         if (resetBtn) resetBtn.style.display = "none";
         if (resetSemuaBtn) resetSemuaBtn.style.display = "none";
-        if (catatanBtn) catatanBtn.style.display = "none";
+        
+        // Mahasiswa bisa export, lihat riwayat, dan lihat catatan
+        if (exportCsvBtn) {
+          exportCsvBtn.style.display = "inline-flex";
+          exportCsvBtn.onclick = () => exportCSV();
+        }
+        if (lihatRiwayatBtn) {
+          lihatRiwayatBtn.style.display = "inline-flex";
+        }
+        if (catatanBtn) {
+          catatanBtn.style.display = "inline-flex";
+        }
       }
     } catch (error) {
       console.error("❌ Error setting up user:", error);
@@ -256,4 +274,3 @@ if (logoutBtn) {
     }
   });
 }
-

@@ -1,4 +1,4 @@
-// js/firestore.js - UPDATED WITH EDIT RIWAYAT FEATURE
+// js/firestore.js - FIXED IMPORT PATH
 import {
   collection,
   addDoc,
@@ -14,7 +14,7 @@ import {
   orderBy,
   setDoc,
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { db } from "./firebaseconfig.js";
+import { db } from "./firebaseConfig.js";
 import { renderPembayaran, renderPengeluaran, updateSummaryUI, showNotification } from "./ui.js";
 
 // Global variable to store current admin status
