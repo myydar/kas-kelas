@@ -1,6 +1,6 @@
 // js/auth.js – FIXED ROLE DETECTION FOR ADMIN VS MAHASISWA
 
-import { auth } from "./firebaseConfig.js";
+import { auth } from "./firebaseconfig.js";
 import {
   signInWithEmailAndPassword,
   signOut,

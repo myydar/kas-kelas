@@ -241,7 +241,7 @@ async function openEditRiwayatModal(riwayatId, nama, bulan, tahun) {
   
   // Get current data
   const { getDocs, collection, query, where } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-  const { db } = await import("./firebaseConfig.js");
+  const { db } = await import("./firebaseconfig.js");
   
   const q = query(collection(db, "riwayat_pembayaran"), where("__name__", "==", riwayatId));
   const snap = await getDocs(q);
@@ -708,7 +708,7 @@ export async function exportCSV() {
   try {
     // Import getDocs dari Firebase
     const { getDocs, collection } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
-    const { db } = await import("./firebaseConfig.js");
+    const { db } = await import("./firebaseconfig.js");
     
     const paySnap = await getDocs(collection(db, "pembayaran"));
     const pengSnap = await getDocs(collection(db, "pengeluaran"));
