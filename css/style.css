@@ -648,10 +648,10 @@ button.editBT:hover {
   #tabelPembayaran tr,
   #tabelPengeluaran tr {
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
     border: 2px solid #e2e8f0;
     border-radius: 12px;
-    padding: 12px;
+    padding: 16px;
     background: white;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
@@ -660,9 +660,10 @@ button.editBT:hover {
   #tabelPengeluaran td {
     display: block;
     text-align: left !important;
-    padding: 8px 0;
+    padding: 10px 0;
     border: none;
     font-size: 14px;
+    line-height: 1.6;
   }
 
   /* Add labels before each data cell */
@@ -670,24 +671,28 @@ button.editBT:hover {
     content: attr(data-label);
     font-weight: 600;
     color: #4a5568;
-    display: inline-block;
-    min-width: 100px;
-    margin-right: 10px;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   #tabelPengeluaran td::before {
     content: attr(data-label);
     font-weight: 600;
     color: #4a5568;
-    display: inline-block;
-    min-width: 100px;
-    margin-right: 10px;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   /* Special handling for buttons */
   #tabelPembayaran td:last-child,
   #tabelPengeluaran td:last-child {
-    margin-top: 8px;
+    margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid #e2e8f0;
   }
@@ -700,91 +705,166 @@ button.editBT:hover {
   /* Bulan/Tahun selector wrapper */
   #tabelPembayaran td:nth-child(2) {
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 0;
+  }
+
+  #tabelPembayaran td:nth-child(2)::before {
+    display: block;
+    margin-bottom: 8px;
   }
 
   .bulanSel {
-    flex: 1;
-    min-width: 120px;
-    font-size: 13px;
-    padding: 8px 10px;
+    width: 100%;
+    min-width: auto;
+    font-size: 14px;
+    padding: 12px 14px;
+    min-height: 44px; /* Touch target size */
   }
 
   .tahunInput {
-    width: 80px;
-    font-size: 13px;
-    padding: 8px 10px;
+    width: 100%;
+    font-size: 14px;
+    padding: 12px 14px;
+    min-height: 44px; /* Touch target size */
   }
 
-  /* Minggu badges - inline flex */
+  /* Minggu badges - full width dengan spacing lebih baik */
   #tabelPembayaran td:nth-child(3),
   #tabelPembayaran td:nth-child(4),
   #tabelPembayaran td:nth-child(5),
   #tabelPembayaran td:nth-child(6) {
-    display: inline-flex;
-    align-items: center;
-    width: 50%;
-    padding: 6px 0;
+    display: block;
+    width: 100%;
+    padding: 12px 0;
   }
 
-  #tabelPembayaran td:nth-child(3)::before { content: "Minggu 1: "; }
-  #tabelPembayaran td:nth-child(4)::before { content: "Minggu 2: "; }
-  #tabelPembayaran td:nth-child(5)::before { content: "Minggu 3: "; }
-  #tabelPembayaran td:nth-child(6)::before { content: "Minggu 4: "; }
+  #tabelPembayaran td:nth-child(3)::before { 
+    content: "Minggu 1"; 
+    display: block;
+    margin-bottom: 8px;
+  }
+  #tabelPembayaran td:nth-child(4)::before { 
+    content: "Minggu 2"; 
+    display: block;
+    margin-bottom: 8px;
+  }
+  #tabelPembayaran td:nth-child(5)::before { 
+    content: "Minggu 3"; 
+    display: block;
+    margin-bottom: 8px;
+  }
+  #tabelPembayaran td:nth-child(6)::before { 
+    content: "Minggu 4"; 
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* Clickable area for minggu - larger touch target */
+  #tabelPembayaran td.clickable {
+    min-height: 44px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    cursor: pointer;
+    background: #f7fafc;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 4px 0;
+    transition: all 0.2s ease;
+  }
+
+  #tabelPembayaran td.clickable:active {
+    background: #edf2f7;
+    transform: scale(0.98);
+  }
 
   /* Badges in mobile */
   td span {
-    padding: 4px 10px !important;
-    font-size: 11px !important;
-    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    border-radius: 8px !important;
     display: inline-block !important;
     font-weight: 600 !important;
+    min-width: 100px;
+    text-align: center;
   }
 
   /* Buttons mobile styling */
   button.hapus, button.editBT, button.lihatRiwayat {
-    padding: 8px 14px;
-    font-size: 12px;
+    padding: 10px 16px;
+    font-size: 13px;
     border-radius: 8px;
-    margin: 4px 4px 4px 0;
+    margin: 6px 6px 6px 0;
     display: inline-block;
+    min-height: 44px; /* Touch target size */
+    min-width: 100px;
   }
 
   /* Total cell special styling */
   .total-full, .total-partial {
     display: inline-block;
-    padding: 6px 12px;
+    padding: 10px 16px;
     border-radius: 8px;
     font-weight: 700;
-    font-size: 15px;
+    font-size: 16px;
+    min-width: 120px;
+    text-align: center;
   }
 
   /* Remove data-label for first cell (nama) */
-  #tabelPembayaran td:first-child::before,
-  #tabelPengeluaran td:first-child::before {
-    content: "👤 ";
-    min-width: auto;
-    margin-right: 4px;
+  #tabelPembayaran td:first-child::before {
+    content: "Nama Siswa";
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  #tabelPembayaran td:first-child {
+    padding: 12px 0;
+    font-size: 16px;
+    font-weight: 600;
   }
 
   /* Total label */
   #tabelPembayaran td:nth-child(7)::before {
-    content: "💰 Total: ";
+    content: "Total Pembayaran";
+  }
+
+  #tabelPembayaran td:nth-child(7) {
+    padding: 12px 0;
+  }
+
+  /* Bulan label */
+  #tabelPembayaran td:nth-child(2)::before {
+    content: "Bulan & Tahun";
   }
 
   /* Pengeluaran labels */
   #tabelPengeluaran td:first-child::before {
-    content: "📝 ";
+    content: "Keterangan";
+  }
+
+  #tabelPengeluaran td:first-child {
+    padding: 12px 0;
+    font-size: 15px;
+    font-weight: 600;
   }
 
   #tabelPengeluaran td:nth-child(2)::before {
-    content: "💵 Jumlah: ";
+    content: "Jumlah";
+  }
+
+  #tabelPengeluaran td:nth-child(2) {
+    padding: 12px 0;
   }
 
   #tabelPengeluaran td:nth-child(3)::before {
-    content: "📅 Tanggal: ";
+    content: "Tanggal";
+  }
+
+  #tabelPengeluaran td:nth-child(3) {
+    padding: 12px 0;
   }
 
   /* Modal Mobile */
@@ -874,16 +954,21 @@ button.editBT:hover {
 
 /* Extra small devices (< 375px) */
 @media (max-width: 374px) {
-  .bulanSel {
-    min-width: 100px;
-  }
-  
+  .bulanSel,
   .tahunInput {
-    width: 70px;
+    font-size: 13px;
+    padding: 10px 12px;
   }
   
   button.hapus, button.editBT, button.lihatRiwayat {
-    padding: 6px 10px;
-    font-size: 11px;
+    padding: 8px 12px;
+    font-size: 12px;
+    min-width: 90px;
+  }
+
+  td span {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    min-width: 90px;
   }
 }
