@@ -1,4 +1,4 @@
-/* ======== IMPROVED STYLE.CSS WITH RESET BUTTONS ======== */
+/* ======== IMPROVED STYLE.CSS WITH RESPONSIVE FIX ======== */
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +16,6 @@ body {
   display: none !important;
   visibility: hidden !important;
 }
-
 
 #mainApp.hidden {
   display: none !important;
@@ -496,8 +495,33 @@ button.editBT:hover {
   background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
 }
 
-/* Responsive */
-/* Responsive */
+.small-muted {
+  font-size: 13px;
+  color: #718096;
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* === STATUS WARNA UNTUK TOTAL === */
+.total-cell {
+  font-weight: 600;
+  text-align: center;
+  transition: background 0.3s ease, color 0.3s ease;
+  border-radius: 6px;
+  padding: 6px;
+}
+
+.total-full {
+  background-color: #c8f7c5;
+  color: #1e4620;
+}
+
+.total-partial {
+  background-color: #fff7c5;
+  color: #5a4b00;
+}
+
+/* ========== RESPONSIVE MOBILE FIX ========== */
 @media (max-width: 768px) {
   header {
     padding: 16px 20px;
@@ -560,7 +584,7 @@ button.editBT:hover {
 
   /* Monthly Section Mobile */
   section {
-    padding: 20px 16px !important;
+    padding: 16px 12px !important;
     margin-bottom: 16px !important;
   }
 
@@ -573,7 +597,7 @@ button.editBT:hover {
   #monthlyList {
     grid-template-columns: 1fr;
     gap: 12px;
-    padding: 16px;
+    padding: 12px;
   }
 
   #monthlyList > div {
@@ -588,150 +612,179 @@ button.editBT:hover {
     font-size: 18px;
   }
 
-  /* Tables Grid to Mobile */
+  /* Tables Grid to Mobile - STACK VERTICALLY */
   #tablesWrapper > div {
     grid-template-columns: 1fr !important;
     gap: 16px !important;
   }
 
   #tablesWrapper > div > div {
-    padding: 16px !important;
+    padding: 12px !important;
   }
 
   #tablesWrapper h3 {
     font-size: 16px !important;
-    margin-bottom: 16px !important;
+    margin-bottom: 12px !important;
   }
 
-  /* Tabel Pengeluaran - lebih compact */
+  /* === FIX TABEL MOBILE - CARD STYLE === */
+  /* Hide table structure on mobile, use card layout */
+  #tabelPembayaran table,
   #tabelPengeluaran table {
-    min-width: 100%;
+    display: block;
+    overflow: visible;
   }
 
-  #tabelPengeluaran th:first-child,
-  #tabelPengeluaran td:first-child {
-    min-width: 120px;
-    max-width: 150px;
+  #tabelPembayaran thead,
+  #tabelPengeluaran thead {
+    display: none; /* Hide headers on mobile */
   }
 
-  #tabelPengeluaran th:nth-child(2),
-  #tabelPengeluaran td:nth-child(2) {
-    min-width: 80px;
+  #tabelPembayaran tbody,
+  #tabelPengeluaran tbody {
+    display: block;
   }
 
-  #tabelPengeluaran th:nth-child(3),
-  #tabelPengeluaran td:nth-child(3) {
-    min-width: 70px;
+  #tabelPembayaran tr,
+  #tabelPengeluaran tr {
+    display: block;
+    margin-bottom: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   }
 
-  #tabelPengeluaran th:last-child,
-  #tabelPengeluaran td:last-child {
-    min-width: 40px;
+  #tabelPembayaran td,
+  #tabelPengeluaran td {
+    display: block;
+    text-align: left !important;
+    padding: 8px 0;
+    border: none;
+    font-size: 14px;
   }
 
-  /* Table Scroll Container */
-  #tabelPembayaran, #tabelPengeluaran {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0 -16px;
-    padding: 0 16px;
-    position: relative;
-  }
-
-  /* Scroll hint shadow */
-  #tabelPembayaran::after, #tabelPengeluaran::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    width: 20px;
-    background: linear-gradient(to left, rgba(255,255,255,0.9), transparent);
-    pointer-events: none;
-  }
-
-  table {
-    font-size: 10px;
-    min-width: 100%;
-    width: 100%;
-  }
-
-  th, td {
-    padding: 6px 3px;
-    white-space: nowrap;
-  }
-
-  th {
-    font-size: 9px;
-    padding: 8px 3px;
-    letter-spacing: 0;
-  }
-
-  /* Kolom nama lebih lebar, yang lain lebih sempit */
-  th:first-child, td:first-child {
+  /* Add labels before each data cell */
+  #tabelPembayaran td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #4a5568;
+    display: inline-block;
     min-width: 100px;
-    max-width: 120px;
-    white-space: normal;
-    padding-left: 6px;
+    margin-right: 10px;
   }
 
-  /* Kolom bulan/tahun */
-  th:nth-child(2), td:nth-child(2) {
-    min-width: 80px;
-    font-size: 9px;
+  #tabelPengeluaran td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #4a5568;
+    display: inline-block;
+    min-width: 100px;
+    margin-right: 10px;
   }
 
-  /* Kolom minggu */
-  th:nth-child(3), th:nth-child(4), th:nth-child(5), th:nth-child(6),
-  td:nth-child(3), td:nth-child(4), td:nth-child(5), td:nth-child(6) {
-    min-width: 30px;
-    max-width: 35px;
-    padding: 6px 2px;
+  /* Special handling for buttons */
+  #tabelPembayaran td:last-child,
+  #tabelPengeluaran td:last-child {
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
   }
 
-  /* Kolom total */
-  th:nth-child(7), td:nth-child(7) {
-    min-width: 70px;
-    font-size: 10px;
+  #tabelPembayaran td:last-child::before,
+  #tabelPengeluaran td:last-child::before {
+    display: none;
   }
 
-  /* Kolom aksi */
-  th:last-child, td:last-child {
-    min-width: 45px;
-    padding-right: 6px;
-  }
-
-  td strong {
-    font-size: 10px;
-  }
-
-  /* Badge dalam tabel - lebih kecil */
-  td span {
-    padding: 2px 4px !important;
-    font-size: 9px !important;
-    border-radius: 4px !important;
-    display: inline-block !important;
-  }
-
-  /* Button dalam tabel lebih kecil */
-  button.hapus, button.editBT, button.lihatRiwayat {
-    padding: 3px 5px;
-    font-size: 9px;
-    border-radius: 4px;
-    white-space: nowrap;
+  /* Bulan/Tahun selector wrapper */
+  #tabelPembayaran td:nth-child(2) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
   }
 
   .bulanSel {
-    font-size: 9px;
-    padding: 3px 4px;
-    max-width: 75px;
-    width: 75px;
+    flex: 1;
+    min-width: 120px;
+    font-size: 13px;
+    padding: 8px 10px;
   }
 
   .tahunInput {
-    width: 50px;
-    font-size: 9px;
-    padding: 3px 4px;
+    width: 80px;
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  /* Minggu badges - inline flex */
+  #tabelPembayaran td:nth-child(3),
+  #tabelPembayaran td:nth-child(4),
+  #tabelPembayaran td:nth-child(5),
+  #tabelPembayaran td:nth-child(6) {
+    display: inline-flex;
+    align-items: center;
+    width: 50%;
+    padding: 6px 0;
+  }
+
+  #tabelPembayaran td:nth-child(3)::before { content: "Minggu 1: "; }
+  #tabelPembayaran td:nth-child(4)::before { content: "Minggu 2: "; }
+  #tabelPembayaran td:nth-child(5)::before { content: "Minggu 3: "; }
+  #tabelPembayaran td:nth-child(6)::before { content: "Minggu 4: "; }
+
+  /* Badges in mobile */
+  td span {
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+    border-radius: 6px !important;
+    display: inline-block !important;
+    font-weight: 600 !important;
+  }
+
+  /* Buttons mobile styling */
+  button.hapus, button.editBT, button.lihatRiwayat {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 8px;
+    margin: 4px 4px 4px 0;
+    display: inline-block;
+  }
+
+  /* Total cell special styling */
+  .total-full, .total-partial {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+
+  /* Remove data-label for first cell (nama) */
+  #tabelPembayaran td:first-child::before,
+  #tabelPengeluaran td:first-child::before {
+    content: "👤 ";
+    min-width: auto;
+    margin-right: 4px;
+  }
+
+  /* Total label */
+  #tabelPembayaran td:nth-child(7)::before {
+    content: "💰 Total: ";
+  }
+
+  /* Pengeluaran labels */
+  #tabelPengeluaran td:first-child::before {
+    content: "📝 ";
+  }
+
+  #tabelPengeluaran td:nth-child(2)::before {
+    content: "💵 Jumlah: ";
+  }
+
+  #tabelPengeluaran td:nth-child(3)::before {
+    content: "📅 Tanggal: ";
   }
 
   /* Modal Mobile */
@@ -744,6 +797,8 @@ button.editBT:hover {
     margin: 0;
     max-width: 100%;
     border-radius: 16px;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 
   .modal h3 {
@@ -788,11 +843,11 @@ button.editBT:hover {
   #riwayatAllContent > div > div,
   #catatanContent > div {
     padding: 12px;
-    font-size: 12px;
+    font-size: 13px;
   }
 
   #riwayatAllContent h4 {
-    font-size: 14px !important;
+    font-size: 15px !important;
   }
 
   #riwayatAllContent .modal,
@@ -817,28 +872,18 @@ button.editBT:hover {
   }
 }
 
-.small-muted {
-  font-size: 13px;
-  color: #718096;
-  margin-top: 16px;
-  text-align: center;
-}
-
-/* === STATUS WARNA UNTUK TOTAL === */
-.total-cell {
-  font-weight: 600;
-  text-align: center;
-  transition: background 0.3s ease, color 0.3s ease;
-  border-radius: 6px;
-  padding: 6px;
-}
-
-.total-full {
-  background-color: #c8f7c5; /* hijau lembut */
-  color: #1e4620;
-}
-
-.total-partial {
-  background-color: #fff7c5; /* kuning lembut */
-  color: #5a4b00;
+/* Extra small devices (< 375px) */
+@media (max-width: 374px) {
+  .bulanSel {
+    min-width: 100px;
+  }
+  
+  .tahunInput {
+    width: 70px;
+  }
+  
+  button.hapus, button.editBT, button.lihatRiwayat {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
 }
