@@ -36,13 +36,13 @@ const users = [
   // --- Admin ---
   {
     name: "Atila Faturrahman Pratama",
-    email: "atila@kelasif24a.local",
+    email: "atila@adminif24a.local",
     password: "atilafp200506",
     role: "admin",
   },
   {
     name: "Mohamad Hilmy Haidar",
-    email: "hilmy@kelasif24a.local",
+    email: "hilmy@adminif24a.local",
     password: "hilmy_703",
     role: "admin",
   },
